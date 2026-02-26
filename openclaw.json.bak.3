@@ -1,0 +1,73 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.2.19-2",
+    "lastTouchedAt": "2026-02-26T08:43:14.937Z"
+  },
+  "wizard": {
+    "lastRunAt": "2026-02-26T08:43:14.857Z",
+    "lastRunVersion": "2026.2.19-2",
+    "lastRunCommand": "configure",
+    "lastRunMode": "local"
+  },
+  "auth": {
+    "profiles": {
+      "google-gemini-cli:rashidoopz14@gmail.com": {
+        "provider": "google-gemini-cli",
+        "mode": "oauth",
+        "email": "rashidoopz14@gmail.com"
+      }
+    }
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "litellm": {
+        "baseUrl": "http://172.30.156.136:4000",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "litellm/local-mistral",
+            "name": "Local Mistral",
+            "contextWindow": 32000,
+            "maxTokens": 4096
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "google-gemini-cli/gemini-3-pro-preview"
+      },
+      "models": {
+        "google-gemini-cli/gemini-3-pro-preview": {}
+      },
+      "workspace": "/home/rashi/.openclaw/workspace",
+      "compaction": {
+        "mode": "safeguard"
+      }
+    }
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": "e5e22ebe05342768c94f7f546c1437b2039b117f2ec067be"
+    }
+  },
+  "plugins": {
+    "entries": {
+      "google-gemini-cli-auth": {
+        "enabled": true
+      }
+    }
+  }
+}

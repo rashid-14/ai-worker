@@ -1,0 +1,48 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.2.19-2",
+    "lastTouchedAt": "2026-02-20T12:54:48.889Z"
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "litellm": {
+        "baseUrl": "http://172.30.156.136:4000",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "litellm/local-mistral",
+            "name": "Local Mistral",
+            "contextWindow": 32000,
+            "maxTokens": 4096
+          }
+        ]
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "litellm/local-mistral"
+      },
+      "workspace": "/home/rashi/.openclaw/workspace",
+      "compaction": {
+        "mode": "safeguard"
+      }
+    }
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true
+  },
+  "gateway": {
+    "port": 18789,
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": "e5e22ebe05342768c94f7f546c1437b2039b117f2ec067be"
+    }
+  }
+}

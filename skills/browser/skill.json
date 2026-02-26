@@ -1,0 +1,6 @@
+{
+  "name": "browser",
+  "description": "Execute browser automation tasks",
+  "type": "tool",
+  "entry": "run.py"
+}
