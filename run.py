@@ -7,9 +7,8 @@ os.environ["OPENCLAW_WORKSPACE"] = "/app/workspace"
 
 from workspace.runner import main
 
+print("Worker started...")
+
 while True:
-    try:
-        main()
-    except Exception as e:
-        print("Worker crashed:", e)
-    time.sleep(5)
+    main()
+    time.sleep(10)
