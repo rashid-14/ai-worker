@@ -3,8 +3,8 @@ import time
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-os.environ["OPENCLAW_HOME"] = "/home/rashi/.openclaw"
-os.environ["OPENCLAW_WORKSPACE"] = "/home/rashi/.openclaw/workspace"
+os.environ["OPENCLAW_HOME"] = "/.openclaw"
+os.environ["OPENCLAW_WORKSPACE"] = "/.openclaw/workspace"
 
 from workspace.runner import main
 
