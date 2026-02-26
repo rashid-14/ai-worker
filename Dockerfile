@@ -6,7 +6,8 @@ COPY . .
 
 RUN pip install google-generativeai pydantic playwright
 
-ENV OPENCLAW_HOME=/app
-ENV OPENCLAW_WORKSPACE=/app/workspace
+# Create OpenClaw expected home
+RUN mkdir -p /home/rashi/.openclaw
+RUN cp -r workspace /home/rashi/.openclaw/
 
 CMD ["python", "run.py"]
