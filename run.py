@@ -9,8 +9,10 @@ from workspace.runner import main
 if __name__ == "__main__":
     while True:
         try:
+            print("Running OpenClaw loop...")
             main()
         except Exception as e:
-            print("Runner crashed:", e)
-
+            print("Error:", e)
+        
+        print("Restarting runner in 5 sec...")
         time.sleep(5)
