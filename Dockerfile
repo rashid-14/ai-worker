@@ -9,9 +9,9 @@ RUN pip install google-generativeai pydantic playwright
 RUN mkdir -p /home/rashi/.openclaw
 RUN cp -r workspace /home/rashi/.openclaw/
 
-ENV PORT=8080
-EXPOSE 8080
-
 RUN echo "force rebuild"
+
+EXPOSE 8080
+ENV PORT=8080
 
 CMD ["python", "run.py"]

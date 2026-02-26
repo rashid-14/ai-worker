@@ -13,16 +13,22 @@ os.environ["OPENCLAW_WORKSPACE"] = "/home/rashi/.openclaw/workspace"
 from workspace.runner import main
 
 
+# Worker runs in background
 def worker_loop():
-    logger.info("Worker loop started")
+    iteration = 0
     while True:
+        iteration += 1
         try:
+            logger.info(f"Worker iteration {iteration} started")
             main()
+            logger.info(f"Worker iteration {iteration} completed")
         except Exception as e:
-            logger.error(f"Worker crashed: {e}", exc_info=True)
+            logger.error(f"Worker crashed: {e}")
+
         time.sleep(5)
 
 
+# Health server runs as MAIN process
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -36,11 +42,11 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
 
-    # Start worker in background thread
-    thread = threading.Thread(target=worker_loop)
-    thread.start()
+    # Start worker in background
+    threading.Thread(target=worker_loop, daemon=True).start()
+    logger.info("Worker thread started")
 
-    # Start health server in main thread (important)
+    # Start HTTP server as MAIN process
     server = HTTPServer(("0.0.0.0", port), Handler)
     logger.info(f"Health server running on port {port}")
     server.serve_forever()
