@@ -1,15 +1,14 @@
 FROM python:3.10
 
 WORKDIR /app
-COPY . .
+
+COPY . /app
 
 RUN pip install google-generativeai pydantic playwright
 
-# Create OpenClaw runtime folder for Railway
-RUN mkdir -p /.openclaw
-RUN cp -r workspace /.openclaw/
+RUN mkdir -p /home/rashi/.openclaw
+RUN cp -r workspace /home/rashi/.openclaw/
 
-ENV OPENCLAW_HOME=/.openclaw
-ENV OPENCLAW_WORKSPACE=/.openclaw/workspace
+RUN echo "force rebuild"
 
 CMD ["python", "run.py"]
