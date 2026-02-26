@@ -2,7 +2,8 @@ import os
 import time
 import threading
 import logging
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from fastapi import FastAPI
+import uvicorn
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -12,9 +13,14 @@ os.environ["OPENCLAW_WORKSPACE"] = "/home/rashi/.openclaw/workspace"
 
 from workspace.runner import main
 
+app = FastAPI()
 
-# Worker runs in background
-def worker_loop():
+@app.get("/")
+def health():
+    return {"status": "ok"}
+
+def run_worker():
+    logger.info("Worker thread started")
     iteration = 0
     while True:
         iteration += 1
@@ -24,29 +30,11 @@ def worker_loop():
             logger.info(f"Worker iteration {iteration} completed")
         except Exception as e:
             logger.error(f"Worker crashed: {e}")
-
         time.sleep(5)
 
-
-# Health server runs as MAIN process
-class Handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b"OK")
-
-    def log_message(self, format, *args):
-        return
-
+threading.Thread(target=run_worker, daemon=True).start()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
-
-    # Start worker in background
-    threading.Thread(target=worker_loop, daemon=True).start()
-    logger.info("Worker thread started")
-
-    # Start HTTP server as MAIN process
-    server = HTTPServer(("0.0.0.0", port), Handler)
-    logger.info(f"Health server running on port {port}")
-    server.serve_forever()
+    logger.info(f"Starting FastAPI on port {port}")
+    uvicorn.run(app, host="0.0.0.0", port=port)
