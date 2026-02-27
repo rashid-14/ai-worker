@@ -24,7 +24,6 @@ def run_scout():
             print("⚠️ No AI response — using fallback")
 
             opportunity_text = """
-Fallback Opportunity:
 Build CRM for furniture manufacturers.
 Skills: React, FastAPI, PostgreSQL
 Difficulty: Medium
@@ -36,19 +35,17 @@ Difficulty: Medium
         print("❌ Scout error:", e)
 
         opportunity_text = """
-Fallback Opportunity:
 Create CRM for interior design companies.
 Skills: Python, UI/UX, Database
 Difficulty: Medium
 """
 
     # ✅ ALWAYS SAVE (AI or fallback)
-
     try:
         task = Task(
             task_type="opportunity",
             status="new",
-            payload=opportunity_text   # TEXT not dict
+            payload={"text": opportunity_text.strip()}   # 🔥 FIXED → JSON format
         )
 
         session.add(task)
