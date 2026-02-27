@@ -14,7 +14,9 @@ def run_scout():
             raise Exception("AI returned empty")
 
         payload = {
-            "text": ai_result
+            "text": ai_result,
+            "source": "ai",
+            "created_at": datetime.utcnow().isoformat()
         }
 
         save_task(
