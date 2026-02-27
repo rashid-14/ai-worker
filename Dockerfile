@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN pip install fastapi uvicorn google-generativeai pydantic playwright
+RUN pip install fastapi uvicorn google-generativeai pydantic playwright SQLAlchemy psycopg2-binary
 
 RUN mkdir -p /home/rashi/.openclaw
 RUN cp -r workspace /home/rashi/.openclaw/
