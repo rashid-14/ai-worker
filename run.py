@@ -48,7 +48,6 @@ def run_worker():
 
     while True:
         iteration += 1
-
         try:
             logger.info(f"Worker iteration {iteration} started")
 
@@ -61,8 +60,7 @@ def run_worker():
         except Exception as e:
             logger.error(f"Worker crashed: {e}")
 
-        # run every 2 mins
-        time.sleep(120)
+        time.sleep(300)   # 5 min cooldown to avoid API quota errors
 
 threading.Thread(target=run_worker, daemon=True).start()
 
