@@ -8,28 +8,28 @@ def run_scout():
 
     session = SessionLocal()
 
-    try:
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-model = genai.GenerativeModel(os.getenv("MODEL"))
-response = model.generate_content(prompt)
 
-        response = client.models.generate_content(
-            model=os.getenv("MODEL"),
-            contents=prompt
-        )
+try:
+    genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-        opportunity_text = response.text
+    model = genai.GenerativeModel(os.getenv("MODEL"))
+    response = model.generate_content(prompt)
 
-        if not opportunity_text:
-            return
+    opportunity_text = response.text
 
-        task = Task(
-            status="new",
-            content=opportunity_text
-        )
+    if not opportunity_text:
+        return
 
-        session.add(task)
-        session.commit()
+    task = Task(
+        status="new",
+        content=opportunity_text
+    )
+
+    session.add(task)
+    session.commit()
+
+except Exception as e:
+    print("Scout error:", e)
 
     except Exception as e:
         print("Scout error:", e)
