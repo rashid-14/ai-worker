@@ -41,7 +41,6 @@ def health():
 last_scout_run = 0
 
 def run_worker():
-    global last_scout_run
     logger.info("Worker thread started")
 
     iteration = 0
@@ -51,16 +50,16 @@ def run_worker():
         try:
             logger.info(f"Worker iteration {iteration} started")
 
-            print("🚀 RUNNING SCOUT")
+            print("🚀 Running Scout...")
             run_scout()
-            print("✅ SCOUT DONE")
+            print("✅ Scout Completed")
 
             logger.info(f"Worker iteration {iteration} completed")
 
         except Exception as e:
             logger.error(f"Worker crashed: {e}")
 
-        time.sleep(300)   # 5 min cooldown to avoid API quota errors
+        time.sleep(300)   # 5 min to avoid quota
 
 threading.Thread(target=run_worker, daemon=True).start()
 
