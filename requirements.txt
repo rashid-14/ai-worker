@@ -1,6 +1,5 @@
 google-generativeai
 playwright
 pydantic
+SQLAlchemy==2.0.47
 psycopg2-binary==2.9.11
-sqlalchemy
-psycopg2-binary
