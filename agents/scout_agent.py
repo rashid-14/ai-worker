@@ -33,8 +33,11 @@ Difficulty: Medium
         print("🧠 AI RESPONSE:", opportunity_text)
 
         task = Task(
+            task_type="scout_opportunity",
+            assigned_to="ai",
             status="new",
-            content=opportunity_text
+            payload=opportunity_text,
+            result=""
         )
 
         session.add(task)
@@ -53,8 +56,11 @@ Difficulty: Medium
 """
 
         task = Task(
+            task_type="scout_opportunity",
+            assigned_to="ai",
             status="new",
-            content=fallback
+            payload=fallback,
+            result=""
         )
 
         session.add(task)
