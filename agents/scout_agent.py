@@ -6,6 +6,7 @@ from database import SessionLocal
 
 
 def run_scout():
+
     prompt = "Generate one real freelance opportunity idea for a developer. Include project type, required skills and difficulty."
 
     session = SessionLocal()
@@ -20,23 +21,29 @@ def run_scout():
 
         opportunity_text = getattr(response, "text", None)
 
+        # ---------- AI FAILED ----------
         if not opportunity_text:
-            print("⚠️ No AI response received — using fallback")
+            print("⚠️ No AI response — using fallback")
 
             opportunity_text = """
-Build CRM for interior design companies.
-Skills: Python, UI/UX, Database
+Build a simple inventory dashboard for furniture manufacturers.
+Skills: React, FastAPI, PostgreSQL
 Difficulty: Medium
 """
 
         print("🧠 AI RESPONSE:", opportunity_text)
 
+        # ✅ SAVE AS JSON (IMPORTANT)
+        payload_json = {
+            "text": opportunity_text.strip()
+        }
+
         task = Task(
             task_type="opportunity",
+            assigned_to=None,
             status="new",
-            payload={
-                "text": opportunity_text.strip()
-            }
+            payload=payload_json,
+            result=None
         )
 
         session.add(task)
@@ -47,24 +54,22 @@ Difficulty: Medium
     except Exception as e:
         print("❌ Scout error:", e)
 
-        fallback = """
-Build inventory dashboard for furniture manufacturers.
-Skills: React, FastAPI, PostgreSQL
-Difficulty: Medium
-"""
+        fallback = {
+            "text": "Create CRM for interior design companies. Skills: Python, UI/UX, Database. Difficulty: Medium"
+        }
 
         task = Task(
             task_type="opportunity",
+            assigned_to=None,
             status="new",
-            payload={
-                "text": fallback.strip()
-            }
+            payload=fallback,
+            result=None
         )
 
         session.add(task)
         session.commit()
 
-        print("⚠️ Saved fallback task due to AI failure")
+        print("⚠️ Saved fallback task")
 
     finally:
         session.close()

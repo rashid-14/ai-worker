@@ -41,34 +41,26 @@ def health():
 last_scout_run = 0
 
 def run_worker():
-    global last_scout_run
     logger.info("Worker thread started")
 
     iteration = 0
 
     while True:
         iteration += 1
+
         try:
             logger.info(f"Worker iteration {iteration} started")
 
-            current_time = time.time()
-
-            # Run scout only every 30 minutes
-            if current_time - last_scout_run > 1800:
-                print("🚀 RUNNING SCOUT (Cooldown Passed)")
-                run_scout()
-                last_scout_run = current_time
-                print("✅ SCOUT DONE")
-            else:
-                print("⏳ Cooldown active... waiting")
+            print("🚀 RUNNING SCOUT")
+            run_scout()
+            print("✅ SCOUT DONE")
 
             logger.info(f"Worker iteration {iteration} completed")
 
         except Exception as e:
             logger.error(f"Worker crashed: {e}")
 
-        # Check every 60 seconds
-        time.sleep(60)
+        time.sleep(120)
 
 threading.Thread(target=run_worker, daemon=True).start()
 
