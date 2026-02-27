@@ -3,11 +3,12 @@ from google import genai
 from models.task import Task
 from database import SessionLocal
 
-
 def run_scout():
     prompt = "Generate one real freelance opportunity idea for a developer. Include project type, required skills and difficulty."
 
     session = SessionLocal()
+
+    opportunity_text = None
 
     try:
         client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -22,17 +23,17 @@ def run_scout():
         if not opportunity_text:
             raise Exception("Empty AI response")
 
-        print("AI RESPONSE:", opportunity_text)
+        print("🧠 AI RESPONSE:", opportunity_text)
 
     except Exception as e:
-        print("Scout error:", e)
+        print("⚠️ AI failed, using fallback:", e)
 
-        opportunity_text = """
-Create CRM for interior design companies.
-Skills: Python, UI/UX, Database
-Difficulty: Medium
-"""
+        opportunity_text = """Fallback Opportunity:
+Build CRM for furniture manufacturers.
+Skills: React, FastAPI, PostgreSQL
+Difficulty: Medium"""
 
+    # Always save safely
     try:
         task = Task(
             task_type="opportunity",
@@ -43,10 +44,10 @@ Difficulty: Medium
         session.add(task)
         session.commit()
 
-        print("Opportunity saved")
+        print("✅ Opportunity saved")
 
     except Exception as db_error:
-        print("DB Save error:", db_error)
+        print("❌ DB Save error:", db_error)
 
     finally:
         session.close()
