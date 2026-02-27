@@ -4,32 +4,35 @@ from models.task import Task
 from database import SessionLocal
 
 def run_scout():
+    prompt = "Generate one real freelance opportunity idea for a developer. Include project type, required skills and difficulty."
+
+    session = SessionLocal()
+
     try:
-        # Configure Gemini
-client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+        client = genai.Client(
+            api_key=os.getenv("GOOGLE_API_KEY")
+        )
 
-response = client.models.generate_content(
-    model=os.getenv("MODEL"),
-    contents=prompt
-)
+        response = client.models.generate_content(
+            model=os.getenv("MODEL"),
+            contents=prompt
+        )
 
-opportunity_text = response.text
+        opportunity_text = response.text
+
         if not opportunity_text:
-            return None
+            return
 
-        session = SessionLocal()
+        task = Task(
+            status="new",
+            content=opportunity_text
+        )
 
-        try:
-            task = Task(
-                status="new",
-                content=opportunity_text
-            )
-            session.add(task)
-            session.commit()
-            return task
-        finally:
-            session.close()
+        session.add(task)
+        session.commit()
 
     except Exception as e:
-        print("Scout skipped:", e)
-        return None
+        print("Scout error:", e)
+
+    finally:
+        session.close()
