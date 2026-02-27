@@ -1,12 +1,22 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-import os
+import json
+from sqlalchemy import text
+from db import engine
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./openclaw.db")
 
-engine = create_engine(DATABASE_URL)
+def save_task(task_type, assigned_to, status, payload, result):
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    payload_json = json.dumps(payload)
 
-Base = declarative_base()
+    query = text("""
+        INSERT INTO tasks (task_type, assigned_to, status, payload, result, updated_at)
+        VALUES (:task_type, :assigned_to, :status, :payload, :result, NOW())
+    """)
+
+    with engine.begin() as conn:
+        conn.execute(query, {
+            "task_type": task_type,
+            "assigned_to": assigned_to,
+            "status": status,
+            "payload": payload_json,
+            "result": result
+        })
