@@ -36,7 +36,6 @@ Difficulty: Medium
 """
 
 ```
-# ✅ SAVE AS JSON (THIS IS THE FIX)
 try:
     task = Task(
         task_type="opportunity",
