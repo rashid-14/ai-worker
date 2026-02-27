@@ -1,8 +1,8 @@
 import time
 import os
 from database import engine, Base
+from models import Task
 from agents.scout_agent import run_scout
-from models.task import Task
 import threading
 import logging
 from fastapi import FastAPI
