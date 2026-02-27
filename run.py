@@ -1,5 +1,5 @@
-import os
 import time
+import os
 from database import engine, Base
 from agents.scout_agent import run_scout
 from models.task import Task
@@ -51,16 +51,24 @@ def run_worker():
         try:
             logger.info(f"Worker iteration {iteration} started")
 
-            print("🚀 FORCING SCOUT RUN")
-            run_scout()
-            print("✅ SCOUT DONE")
+            current_time = time.time()
+
+            # Run scout only every 30 minutes
+            if current_time - last_scout_run > 1800:
+                print("🚀 RUNNING SCOUT (Cooldown Passed)")
+                run_scout()
+                last_scout_run = current_time
+                print("✅ SCOUT DONE")
+            else:
+                print("⏳ Cooldown active... waiting")
 
             logger.info(f"Worker iteration {iteration} completed")
 
         except Exception as e:
             logger.error(f"Worker crashed: {e}")
 
-        time.sleep(120)
+        # Check every 60 seconds
+        time.sleep(60)
 
 threading.Thread(target=run_worker, daemon=True).start()
 
