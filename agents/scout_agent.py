@@ -5,6 +5,7 @@ from database import SessionLocal
 
 
 def run_scout():
+
     prompt = "Generate one real freelance opportunity idea for a developer. Include project type, required skills and difficulty."
 
     session = SessionLocal()
@@ -19,25 +20,23 @@ def run_scout():
 
         opportunity_text = getattr(response, "text", None)
 
-        # SAFETY CHECK
+        # fallback if AI fails
         if not opportunity_text:
             print("⚠️ No AI response received — using fallback")
 
             opportunity_text = """
-Fallback Opportunity:
-Build a simple inventory management dashboard for a small furniture manufacturer.
+Build a simple inventory dashboard for a small furniture manufacturer.
 Skills: React, FastAPI, PostgreSQL
 Difficulty: Medium
 """
 
         print("🧠 AI RESPONSE:", opportunity_text)
 
+        # ✅ SAVE USING CORRECT COLUMNS
         task = Task(
-            task_type="scout_opportunity",
-            assigned_to="ai",
+            task_type="opportunity",
             status="new",
-            payload=opportunity_text,
-            result=""
+            payload=opportunity_text
         )
 
         session.add(task)
@@ -49,24 +48,21 @@ Difficulty: Medium
         print("❌ Scout error:", e)
 
         fallback = """
-Fallback Opportunity:
 Create CRM for interior design companies.
 Skills: Python, UI/UX, Database
 Difficulty: Medium
 """
 
         task = Task(
-            task_type="scout_opportunity",
-            assigned_to="ai",
+            task_type="opportunity",
             status="new",
-            payload=fallback,
-            result=""
+            payload=fallback
         )
 
         session.add(task)
         session.commit()
 
-        print("⚠️ Saved fallback task due to AI failure")
+        print("⚠️ Saved fallback task")
 
     finally:
         session.close()
