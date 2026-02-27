@@ -10,9 +10,9 @@ def run_scout():
     session = SessionLocal()
 
     prompt = """
-Generate one real freelance opportunity idea.
+Generate one real freelance opportunity.
 
-Return in this format:
+Return in format:
 
 Project:
 Skills:
@@ -37,13 +37,11 @@ Difficulty:
             "source": "ai"
         }
 
-    except Exception as e:
-        print("⚠️ AI Failed — using fallback")
+    except Exception:
+        print("⚠️ AI failed → using fallback")
 
         payload = {
-            "text": """Build CRM for interior design companies.
-Skills: Python, UI/UX, Database
-Difficulty: Medium""",
+            "text": "Create CRM for interior design companies. Skills: Python, UI/UX, Database. Difficulty: Medium",
             "source": "fallback"
         }
 
@@ -51,16 +49,16 @@ Difficulty: Medium""",
         task = Task(
             task_type="opportunity",
             status="new",
-            payload=json.dumps(payload)   # ✅ ALWAYS JSON
+            payload=payload   # 🚀 IMPORTANT: DO NOT json.dumps
         )
 
         session.add(task)
         session.commit()
 
-        print("✅ Opportunity saved")
+        print("✅ Task saved")
 
-    except Exception as db_error:
-        print("❌ DB Save error:", db_error)
+    except Exception as e:
+        print("❌ DB Save error:", e)
 
     finally:
         session.close()

@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, DateTime, JSON
 from database import Base
 import datetime
 
+
 class Task(Base):
     __tablename__ = "tasks"
 
@@ -9,7 +10,7 @@ class Task(Base):
     task_type = Column(String, nullable=True)
     assigned_to = Column(String, nullable=True)
     status = Column(String, default="new")
-    payload = Column(JSON)   # ✅ Must be JSON
+    payload = Column(JSON)        # 🚀 JSON column
     result = Column(JSON, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, nullable=True)
