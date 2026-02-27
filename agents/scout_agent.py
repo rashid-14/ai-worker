@@ -1,26 +1,36 @@
 import os
-import json
+import time
 from google import genai
 from models.task import Task
 from database import SessionLocal
 
+LAST_API_CALL = 0
+COOLDOWN = 3600   # 1 hour cooldown if quota hit
 
 def run_scout():
-
-    prompt = """
-Generate one real freelance opportunity idea for a developer.
-Include:
-
-Project Title
-Required Skills
-Difficulty (Easy / Medium / Hard)
-Short Description
-"""
+    global LAST_API_CALL
 
     session = SessionLocal()
 
     try:
+        now = time.time()
+
+        # ⛔ Avoid API spam if quota hit
+        if now - LAST_API_CALL < COOLDOWN:
+            print("⏳ Skipping AI call (Cooldown active)")
+            return
+
         client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+
+        prompt = """
+Generate ONE real freelance opportunity idea.
+
+Return plain text only.
+Include:
+Project
+Skills
+Difficulty
+"""
 
         response = client.models.generate_content(
             model=os.getenv("MODEL"),
@@ -29,62 +39,45 @@ Short Description
 
         opportunity_text = getattr(response, "text", None)
 
-        # 🛟 SAFETY FALLBACK if AI fails
         if not opportunity_text:
-            print("⚠️ No AI response — using fallback")
-
-            opportunity_text = """
-Build Inventory Dashboard for Furniture Manufacturers
-
-Skills: React, FastAPI, PostgreSQL  
-Difficulty: Medium  
-Description: Create a simple dashboard to track stock, production and sales.
-"""
+            raise Exception("Empty AI response")
 
         print("🧠 AI RESPONSE:", opportunity_text)
 
-        # ✅ SAVE PROPER JSON (FIXED)
         task = Task(
             task_type="opportunity",
-            assigned_to=None,
             status="new",
-            payload=json.dumps({
-                "text": opportunity_text
-            }),
-            result=None
+            payload={"text": opportunity_text}
         )
 
         session.add(task)
         session.commit()
+
+        LAST_API_CALL = time.time()
 
         print("✅ Scout saved new opportunity")
 
     except Exception as e:
         print("❌ Scout error:", e)
 
-        fallback = """
-Create CRM for interior design companies
+        LAST_API_CALL = time.time()   # Activate cooldown
 
-Skills: Python, UI/UX, Database  
-Difficulty: Medium  
-Description: Manage clients, projects and quotations.
+        fallback = """
+Build a simple CRM for interior designers.
+Skills: Python, React, PostgreSQL
+Difficulty: Medium
 """
 
-        # ✅ SAVE FALLBACK JSON (FIXED)
         task = Task(
             task_type="opportunity",
-            assigned_to=None,
             status="new",
-            payload=json.dumps({
-                "text": fallback
-            }),
-            result=None
+            payload={"text": fallback}
         )
 
         session.add(task)
         session.commit()
 
-        print("⚠️ Saved fallback task due to AI failure")
+        print("⚠️ Saved fallback task")
 
     finally:
         session.close()

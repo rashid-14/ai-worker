@@ -41,6 +41,7 @@ def health():
 last_scout_run = 0
 
 def run_worker():
+    global last_scout_run
     logger.info("Worker thread started")
 
     iteration = 0
@@ -52,7 +53,9 @@ def run_worker():
             logger.info(f"Worker iteration {iteration} started")
 
             print("🚀 RUNNING SCOUT")
+
             run_scout()
+
             print("✅ SCOUT DONE")
 
             logger.info(f"Worker iteration {iteration} completed")
@@ -60,7 +63,8 @@ def run_worker():
         except Exception as e:
             logger.error(f"Worker crashed: {e}")
 
-        time.sleep(120)
+        # Run every 10 minutes instead of spam loop
+        time.sleep(600)
 
 threading.Thread(target=run_worker, daemon=True).start()
 
