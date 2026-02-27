@@ -44,16 +44,17 @@ def run_worker():
         iteration += 1
         try:
             logger.info(f"Worker iteration {iteration} started")
+            
             main()
-	    main()
-print("Calling Scout...")
-run_scout()
-print("Scout finished")
+
+            print("Calling Scout...")
+            run_scout()
+            print("Scout finished")
+
             logger.info(f"Worker iteration {iteration} completed")
         except Exception as e:
             logger.error(f"Worker crashed: {e}")
         time.sleep(5)
-
 threading.Thread(target=run_worker, daemon=True).start()
 
 if __name__ == "__main__":
