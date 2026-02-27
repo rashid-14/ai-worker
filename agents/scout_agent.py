@@ -22,10 +22,10 @@ try:
     if not opportunity_text:
         raise Exception("Empty AI response")
 
-    print("🧠 AI RESPONSE:", opportunity_text)
+    print("AI RESPONSE:", opportunity_text)
 
 except Exception as e:
-    print("❌ Scout error:", e)
+    print("Scout error:", e)
 
     opportunity_text = """
 ```
@@ -40,18 +40,16 @@ try:
     task = Task(
         task_type="opportunity",
         status="new",
-        payload={
-            "text": opportunity_text.strip()
-        }
+        payload={"text": opportunity_text.strip()}
     )
 
     session.add(task)
     session.commit()
 
-    print("✅ Opportunity saved")
+    print("Opportunity saved")
 
 except Exception as db_error:
-    print("❌ DB Save error:", db_error)
+    print("DB Save error:", db_error)
 
 finally:
     session.close()
