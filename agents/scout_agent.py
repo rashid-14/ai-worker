@@ -19,12 +19,9 @@ try:
     opportunity_text = response.text
 except Exception as e:
     print("Gemini quota hit or error:", e)
-    return None    
-    # Get database session
-    session = SessionLocal()
-    
-    try:
-        # Create new Task with generated opportunity
+    return None
+
+# Stop if nothing generated
 if not opportunity_text:
     return None
 
