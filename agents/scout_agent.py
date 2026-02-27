@@ -1,5 +1,5 @@
 import os
-from google import genai
+import google.generativeai as genai
 from models.task import Task
 from database import SessionLocal
 
@@ -9,9 +9,9 @@ def run_scout():
     session = SessionLocal()
 
     try:
-        client = genai.Client(
-            api_key=os.getenv("GOOGLE_API_KEY")
-        )
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+model = genai.GenerativeModel(os.getenv("MODEL"))
+response = model.generate_content(prompt)
 
         response = client.models.generate_content(
             model=os.getenv("MODEL"),
