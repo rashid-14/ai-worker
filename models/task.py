@@ -1,16 +1,14 @@
-from sqlalchemy import Column, Integer, String, DateTime, JSON
+from sqlalchemy import Column, Integer, String, Text, DateTime
 from database import Base
-import datetime
-
+from datetime import datetime
 
 class Task(Base):
     __tablename__ = "tasks"
 
     id = Column(Integer, primary_key=True, index=True)
-    task_type = Column(String, nullable=True)
+    task_type = Column(String)
     assigned_to = Column(String, nullable=True)
-    status = Column(String, default="new")
-    payload = Column(JSON)        # 🚀 JSON column
-    result = Column(JSON, nullable=True)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-    updated_at = Column(DateTime, nullable=True)
+    status = Column(String)
+    payload = Column(Text)
+    result = Column(Text, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
