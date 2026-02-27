@@ -46,14 +46,11 @@ def run_worker():
         try:
             logger.info(f"Worker iteration {iteration} started")
 
-            # Run system brain
             main()
 
-            # Run Scout only every 5 iterations
-            if iteration % 5 == 0:
-                logger.info("Calling Scout...")
-                run_scout()
-                logger.info("Scout finished")
+            print("Calling Scout...")
+            run_scout()
+            print("Scout finished")
 
             logger.info(f"Worker iteration {iteration} completed")
 
