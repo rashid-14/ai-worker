@@ -1,22 +1,18 @@
-import json
-from sqlalchemy import text
-from db import engine
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker, declarative_base
+import os
 
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-def save_task(task_type, assigned_to, status, payload, result):
+engine = create_engine(
+    DATABASE_URL,
+    pool_pre_ping=True
+)
 
-    payload_json = json.dumps(payload)
+SessionLocal = sessionmaker(
+    autocommit=False,
+    autoflush=False,
+    bind=engine
+)
 
-    query = text("""
-        INSERT INTO tasks (task_type, assigned_to, status, payload, result, updated_at)
-        VALUES (:task_type, :assigned_to, :status, :payload, :result, NOW())
-    """)
-
-    with engine.begin() as conn:
-        conn.execute(query, {
-            "task_type": task_type,
-            "assigned_to": assigned_to,
-            "status": status,
-            "payload": payload_json,
-            "result": result
-        })
+Base = declarative_base()
