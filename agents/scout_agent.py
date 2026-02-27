@@ -7,7 +7,15 @@ from database import SessionLocal
 
 def run_scout():
 
-    prompt = "Generate one real freelance opportunity idea for a developer. Include project type, required skills and difficulty."
+    prompt = """
+Generate one real freelance opportunity idea for a developer.
+Include:
+
+Project Title
+Required Skills
+Difficulty (Easy / Medium / Hard)
+Short Description
+"""
 
     session = SessionLocal()
 
@@ -21,28 +29,28 @@ def run_scout():
 
         opportunity_text = getattr(response, "text", None)
 
-        # ---------- AI FAILED ----------
+        # 🛟 SAFETY FALLBACK if AI fails
         if not opportunity_text:
             print("⚠️ No AI response — using fallback")
 
             opportunity_text = """
-Build a simple inventory dashboard for furniture manufacturers.
-Skills: React, FastAPI, PostgreSQL
-Difficulty: Medium
+Build Inventory Dashboard for Furniture Manufacturers
+
+Skills: React, FastAPI, PostgreSQL  
+Difficulty: Medium  
+Description: Create a simple dashboard to track stock, production and sales.
 """
 
         print("🧠 AI RESPONSE:", opportunity_text)
 
-        # ✅ SAVE AS JSON (IMPORTANT)
-        payload_json = {
-            "text": opportunity_text.strip()
-        }
-
+        # ✅ SAVE PROPER JSON (FIXED)
         task = Task(
             task_type="opportunity",
             assigned_to=None,
             status="new",
-            payload=payload_json,
+            payload=json.dumps({
+                "text": opportunity_text
+            }),
             result=None
         )
 
@@ -54,22 +62,29 @@ Difficulty: Medium
     except Exception as e:
         print("❌ Scout error:", e)
 
-        fallback = {
-            "text": "Create CRM for interior design companies. Skills: Python, UI/UX, Database. Difficulty: Medium"
-        }
+        fallback = """
+Create CRM for interior design companies
 
+Skills: Python, UI/UX, Database  
+Difficulty: Medium  
+Description: Manage clients, projects and quotations.
+"""
+
+        # ✅ SAVE FALLBACK JSON (FIXED)
         task = Task(
             task_type="opportunity",
             assigned_to=None,
             status="new",
-            payload=fallback,
+            payload=json.dumps({
+                "text": fallback
+            }),
             result=None
         )
 
         session.add(task)
         session.commit()
 
-        print("⚠️ Saved fallback task")
+        print("⚠️ Saved fallback task due to AI failure")
 
     finally:
         session.close()
