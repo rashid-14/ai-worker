@@ -17,7 +17,20 @@ from workspace.runner import main
 
 app = FastAPI()
 
-Base.metadata.create_all(bind=engine)
+def init_db():
+    import time
+    from sqlalchemy.exc import OperationalError
+    
+    for i in range(10):
+        try:
+            Base.metadata.create_all(bind=engine)
+            print("DB connected and table created")
+            return
+        except OperationalError:
+            print("Waiting for DB...")
+            time.sleep(3)
+
+init_db()
 
 @app.get("/")
 def health():
