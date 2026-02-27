@@ -14,19 +14,24 @@ def run_scout():
     # Generate freelance opportunity
     prompt = "Generate a single specific freelance opportunity idea that a developer could pursue. Include the project type, skills required, and estimated difficulty level. Keep it concise."
     
+try:
     response = model.generate_content(prompt)
     opportunity_text = response.text
-    
+except Exception as e:
+    print("Gemini quota hit or error:", e)
+    return None    
     # Get database session
     session = SessionLocal()
     
     try:
         # Create new Task with generated opportunity
-        task = Task(
-            status="new",
-            content=opportunity_text
-        )
-        
+if not opportunity_text:
+    return None
+
+task = Task(
+    status="new",
+    content=opportunity_text
+)        
         # Add to session and commit
         session.add(task)
         session.commit()
