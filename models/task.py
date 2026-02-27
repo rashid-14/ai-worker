@@ -1,15 +1,14 @@
-from sqlalchemy import Column, Integer, String, JSON, DateTime
-from database import Base
+from sqlalchemy import Column, Integer, String, DateTime
 from datetime import datetime
+from database import Base
+
 
 class Task(Base):
     __tablename__ = "tasks"
 
-    id = Column(Integer, primary_key=True, index=True)
-    task_type = Column(String)
-    assigned_to = Column(String)
+    id = Column(Integer, primary_key=True)
+    type = Column(String)   # 👈 THIS WAS MISSING
+    title = Column(String)
+    description = Column(String)
     status = Column(String, default="pending")
-    payload = Column(JSON)
-    result = Column(JSON)
     created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow)
