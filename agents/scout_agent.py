@@ -3,7 +3,6 @@ from google import genai
 from models.task import Task
 from database import SessionLocal
 
-
 def run_scout():
     prompt = "Generate one real freelance opportunity idea for a developer. Include project type, required skills and difficulty."
 
@@ -33,12 +32,11 @@ Skills: Python, UI/UX, Database
 Difficulty: Medium
 """
 
-    # ✅ SAVE AS STRING (NOT DICT)
     try:
         task = Task(
             task_type="opportunity",
             status="new",
-            payload=opportunity_text.strip()   # <-- IMPORTANT FIX
+            payload=opportunity_text.strip()   # ✅ TEXT not dict
         )
 
         session.add(task)
