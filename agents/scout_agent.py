@@ -22,13 +22,17 @@ def run_scout():
         if not opportunity_text:
             return
 
+        # ✅ Save using correct DB columns
         task = Task(
+            task_type="opportunity",
             status="new",
-            content=opportunity_text
+            payload=opportunity_text
         )
 
         session.add(task)
         session.commit()
+
+        print("Scout saved new opportunity")
 
     except Exception as e:
         print("Scout error:", e)
