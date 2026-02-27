@@ -45,7 +45,10 @@ def run_worker():
         try:
             logger.info(f"Worker iteration {iteration} started")
             main()
-	    run_scout()
+	    main()
+print("Calling Scout...")
+run_scout()
+print("Scout finished")
             logger.info(f"Worker iteration {iteration} completed")
         except Exception as e:
             logger.error(f"Worker crashed: {e}")
