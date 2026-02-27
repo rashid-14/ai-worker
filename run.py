@@ -40,21 +40,28 @@ def health():
 def run_worker():
     logger.info("Worker thread started")
     iteration = 0
+
     while True:
         iteration += 1
         try:
             logger.info(f"Worker iteration {iteration} started")
-            
+
+            # Run system brain
             main()
 
-            print("Calling Scout...")
-            run_scout()
-            print("Scout finished")
+            # Run Scout only every 5 iterations
+            if iteration % 5 == 0:
+                logger.info("Calling Scout...")
+                run_scout()
+                logger.info("Scout finished")
 
             logger.info(f"Worker iteration {iteration} completed")
+
         except Exception as e:
             logger.error(f"Worker crashed: {e}")
+
         time.sleep(5)
+
 threading.Thread(target=run_worker, daemon=True).start()
 
 if __name__ == "__main__":
