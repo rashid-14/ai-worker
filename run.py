@@ -37,7 +37,10 @@ init_db()
 def health():
     return {"status": "ok"}
 
+
+last_scout_run = 0
 def run_worker():
+    global last_scout_run
     logger.info("Worker thread started")
     iteration = 0
 
@@ -48,9 +51,13 @@ def run_worker():
 
             main()
 
-            print("Calling Scout...")
-            run_scout()
-            print("Scout finished")
+            current_time = time.time()
+
+            if current_time - last_scout_run >= 1800:  # 30 minutes
+                print("Running Scout...")
+                run_scout()
+                last_scout_run = time.time()
+                print("Scout finished")
 
             logger.info(f"Worker iteration {iteration} completed")
 
