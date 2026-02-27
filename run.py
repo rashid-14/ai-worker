@@ -46,28 +46,21 @@ def run_worker():
     logger.info("Worker thread started")
     iteration = 0
 
-    while True:
-        iteration += 1
-        try:
-            logger.info(f"Worker iteration {iteration} started")
+while True:
+    iteration += 1
+    try:
+        logger.info(f"Worker iteration {iteration} started")
 
-            main()
+        print("🚀 FORCING SCOUT RUN")
+        run_scout()
+        print("✅ SCOUT DONE")
 
-            current_time = time.time()
+        logger.info(f"Worker iteration {iteration} completed")
 
-            # run scout every 60 seconds for testing
-            if current_time - last_scout_run >= 60:
-                print("🚀 Running Scout...")
-                run_scout()
-                last_scout_run = time.time()
-                print("✅ Scout finished")
+    except Exception as e:
+        logger.error(f"Worker crashed: {e}")
 
-            logger.info(f"Worker iteration {iteration} completed")
-
-        except Exception as e:
-            logger.error(f"Worker crashed: {e}")
-
-        time.sleep(5)
+    time.sleep(10)
 
 threading.Thread(target=run_worker, daemon=True).start()
 
