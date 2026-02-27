@@ -1,19 +1,19 @@
 import os
-import google.generativeai as genai
+from google import genai
 from models.task import Task
 from database import SessionLocal
 
 def run_scout():
     try:
         # Configure Gemini
-        genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-        model = genai.GenerativeModel(os.getenv("MODEL"))
+client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
-        prompt = "Generate one freelance software project opportunity idea."
+response = client.models.generate_content(
+    model=os.getenv("MODEL"),
+    contents=prompt
+)
 
-        response = model.generate_content(prompt)
-        opportunity_text = response.text
-
+opportunity_text = response.text
         if not opportunity_text:
             return None
 

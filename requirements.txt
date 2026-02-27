@@ -1,4 +1,4 @@
-google-generativeai
+google-genai
 playwright
 pydantic
 SQLAlchemy==2.0.47
