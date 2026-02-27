@@ -1,6 +1,7 @@
 import os
 import time
 from database import engine, Base
+from agents.scout_agent import run_scout
 from models.task import Task
 import threading
 import logging
@@ -44,6 +45,7 @@ def run_worker():
         try:
             logger.info(f"Worker iteration {iteration} started")
             main()
+	    run_scout()
             logger.info(f"Worker iteration {iteration} completed")
         except Exception as e:
             logger.error(f"Worker crashed: {e}")
