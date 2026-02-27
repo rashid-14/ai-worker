@@ -1,11 +1,11 @@
 import os
+import json
 from google import genai
 from models.task import Task
 from database import SessionLocal
 
 
 def run_scout():
-
     prompt = "Generate one real freelance opportunity idea for a developer. Include project type, required skills and difficulty."
 
     session = SessionLocal()
@@ -20,23 +20,23 @@ def run_scout():
 
         opportunity_text = getattr(response, "text", None)
 
-        # fallback if AI fails
         if not opportunity_text:
             print("⚠️ No AI response received — using fallback")
 
             opportunity_text = """
-Build a simple inventory dashboard for a small furniture manufacturer.
-Skills: React, FastAPI, PostgreSQL
+Build CRM for interior design companies.
+Skills: Python, UI/UX, Database
 Difficulty: Medium
 """
 
         print("🧠 AI RESPONSE:", opportunity_text)
 
-        # ✅ SAVE USING CORRECT COLUMNS
         task = Task(
             task_type="opportunity",
             status="new",
-            payload=opportunity_text
+            payload={
+                "text": opportunity_text.strip()
+            }
         )
 
         session.add(task)
@@ -48,21 +48,23 @@ Difficulty: Medium
         print("❌ Scout error:", e)
 
         fallback = """
-Create CRM for interior design companies.
-Skills: Python, UI/UX, Database
+Build inventory dashboard for furniture manufacturers.
+Skills: React, FastAPI, PostgreSQL
 Difficulty: Medium
 """
 
         task = Task(
             task_type="opportunity",
             status="new",
-            payload=fallback
+            payload={
+                "text": fallback.strip()
+            }
         )
 
         session.add(task)
         session.commit()
 
-        print("⚠️ Saved fallback task")
+        print("⚠️ Saved fallback task due to AI failure")
 
     finally:
         session.close()
