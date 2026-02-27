@@ -1,64 +1,59 @@
-import os
 import json
-from google import genai
-from models.task import Task
-from database import SessionLocal
+import time
+from sqlalchemy import text
+from db import engine
+from ai import generate_opportunity
+
+
+def save_task(task_type, payload_text):
+    try:
+        # ✅ Always convert payload to JSON
+        payload_json = json.dumps({
+            "text": payload_text
+        })
+
+        with engine.begin() as conn:
+            conn.execute(text("""
+                INSERT INTO tasks (task_type, assigned_to, status, payload, result, updated_at)
+                VALUES (:task_type, NULL, 'new', :payload, NULL, NULL)
+            """), {
+                "task_type": task_type,
+                "payload": payload_json
+            })
+
+        print("✅ Opportunity saved")
+
+    except Exception as e:
+        print(f"❌ DB Save error: {e}")
 
 
 def run_scout():
-
-    session = SessionLocal()
-
-    prompt = """
-Generate one real freelance opportunity.
-
-Return in format:
-
-Project:
-Skills:
-Difficulty:
-"""
+    print("🚀 Running Scout...")
 
     try:
-        client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+        opportunity = generate_opportunity()
 
-        response = client.models.generate_content(
-            model=os.getenv("MODEL"),
-            contents=prompt
-        )
-
-        ai_text = getattr(response, "text", None)
-
-        if not ai_text:
-            raise Exception("Empty AI response")
-
-        payload = {
-            "text": ai_text.strip(),
-            "source": "ai"
-        }
-
-    except Exception:
-        print("⚠️ AI failed → using fallback")
-
-        payload = {
-            "text": "Create CRM for interior design companies. Skills: Python, UI/UX, Database. Difficulty: Medium",
-            "source": "fallback"
-        }
-
-    try:
-        task = Task(
-            task_type="opportunity",
-            status="new",
-            payload=payload   # 🚀 IMPORTANT: DO NOT json.dumps
-        )
-
-        session.add(task)
-        session.commit()
-
-        print("✅ Task saved")
+        if opportunity:
+            save_task("opportunity", opportunity)
+            print("✅ Scout Completed")
+        else:
+            raise Exception("AI returned empty")
 
     except Exception as e:
-        print("❌ DB Save error:", e)
+        print(f"❌ Scout error: {e}")
 
-    finally:
-        session.close()
+        # 🔁 Fallback Opportunity (ALWAYS SAFE JSON)
+        fallback_text = """
+Create CRM for interior design companies.
+
+Skills: Python, UI/UX, Database
+Difficulty: Medium
+"""
+        save_task("opportunity", fallback_text)
+        print("⚠️ Saved fallback task due to AI failure")
+
+
+if __name__ == "__main__":
+    while True:
+        run_scout()
+        time.sleep(30)
