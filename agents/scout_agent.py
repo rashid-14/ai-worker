@@ -1,4 +1,5 @@
 import os
+import json
 from google import genai
 from models.task import Task
 from database import SessionLocal
@@ -36,7 +37,7 @@ Difficulty: Medium
         task = Task(
             task_type="opportunity",
             status="new",
-            payload=opportunity_text.strip()   # ✅ TEXT not dict
+            payload=json.dumps({"text": opportunity_text.strip()})  # ✅ VALID JSON
         )
 
         session.add(task)
