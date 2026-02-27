@@ -39,8 +39,10 @@ def health():
 
 
 last_scout_run = 0
+
 def run_worker():
     global last_scout_run
+
     logger.info("Worker thread started")
     iteration = 0
 
@@ -53,11 +55,12 @@ def run_worker():
 
             current_time = time.time()
 
-            if current_time - last_scout_run >= 1800:  # 30 minutes
-                print("Running Scout...")
+            # run scout every 60 seconds for testing
+            if current_time - last_scout_run >= 60:
+                print("🚀 Running Scout...")
                 run_scout()
                 last_scout_run = time.time()
-                print("Scout finished")
+                print("✅ Scout finished")
 
             logger.info(f"Worker iteration {iteration} completed")
 
