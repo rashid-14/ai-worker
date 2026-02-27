@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN pip install fastapi uvicorn google-genai pydantic playwright
+RUN pip install -r requirements.txt
 
 RUN mkdir -p /home/rashi/.openclaw
 RUN cp -r workspace /home/rashi/.openclaw/
