@@ -1,5 +1,7 @@
 import os
 import time
+from database import engine, Base
+from models.task import Task
 import threading
 import logging
 from fastapi import FastAPI
@@ -14,6 +16,8 @@ os.environ["OPENCLAW_WORKSPACE"] = "/home/rashi/.openclaw/workspace"
 from workspace.runner import main
 
 app = FastAPI()
+
+Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def health():
