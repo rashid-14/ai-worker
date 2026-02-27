@@ -17,25 +17,50 @@ def run_scout():
             contents=prompt
         )
 
-        opportunity_text = response.text
+        opportunity_text = getattr(response, "text", None)
 
+        # SAFETY CHECK
         if not opportunity_text:
-            return
+            print("⚠️ No AI response received — using fallback")
 
-        # ✅ Save using correct DB columns
+            opportunity_text = """
+Fallback Opportunity:
+Build a simple inventory management dashboard for a small furniture manufacturer.
+Skills: React, FastAPI, PostgreSQL
+Difficulty: Medium
+"""
+
+        print("🧠 AI RESPONSE:", opportunity_text)
+
         task = Task(
-            task_type="opportunity",
             status="new",
-            payload=opportunity_text
+            content=opportunity_text
         )
 
         session.add(task)
         session.commit()
 
-        print("Scout saved new opportunity")
+        print("✅ Scout saved new opportunity")
 
     except Exception as e:
-        print("Scout error:", e)
+        print("❌ Scout error:", e)
+
+        fallback = """
+Fallback Opportunity:
+Create CRM for interior design companies.
+Skills: Python, UI/UX, Database
+Difficulty: Medium
+"""
+
+        task = Task(
+            status="new",
+            content=fallback
+        )
+
+        session.add(task)
+        session.commit()
+
+        print("⚠️ Saved fallback task due to AI failure")
 
     finally:
         session.close()
