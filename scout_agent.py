@@ -1,53 +1,51 @@
-import json
-from datetime import datetime
-from database import save_task
-from ai import generate_ai_opportunity
-
+import os
+from google import genai
+from models.task import Task
+from database import SessionLocal
 
 def run_scout():
-    print("🚀 Running Scout...")
+    prompt = "Generate one real freelance opportunity idea for a developer. Include project type, required skills and difficulty."
+
+    session = SessionLocal()
 
     try:
-        ai_result = generate_ai_opportunity()
+        client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
 
-        if not ai_result:
-            raise Exception("AI returned empty")
-
-        payload = {
-            "text": ai_result,
-            "source": "ai",
-            "created_at": datetime.utcnow().isoformat()
-        }
-
-        save_task(
-            task_type="opportunity",
-            assigned_to=None,
-            status="new",
-            payload=payload,
-            result=None
+        response = client.models.generate_content(
+            model=os.getenv("MODEL"),
+            contents=prompt
         )
 
-        print("✅ Opportunity saved from AI")
+        opportunity_text = getattr(response, "text", None)
+
+        if not opportunity_text:
+            raise Exception("Empty AI response")
+
+        print("AI RESPONSE:", opportunity_text)
 
     except Exception as e:
-        print(f"❌ Scout error: {e}")
+        print("Scout error:", e)
 
-        fallback_text = """Create CRM for interior design companies.
+        opportunity_text = """
+Create CRM for interior design companies.
 Skills: Python, UI/UX, Database
-Difficulty: Medium"""
+Difficulty: Medium
+"""
 
-        payload = {
-            "text": fallback_text,
-            "source": "fallback",
-            "created_at": datetime.utcnow().isoformat()
-        }
-
-        save_task(
+    try:
+        task = Task(
             task_type="opportunity",
-            assigned_to=None,
             status="new",
-            payload=payload,
-            result=None
+            payload={"text": opportunity_text.strip()}   # ✅ PURE DICT (not dumps)
         )
 
-        print("⚠️ Saved fallback opportunity")
+        session.add(task)
+        session.commit()
+
+        print("Opportunity saved")
+
+    except Exception as db_error:
+        print("DB Save error:", db_error)
+
+    finally:
+        session.close()
