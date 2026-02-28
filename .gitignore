@@ -1,2 +1,6 @@
 agents/main/agent/auth.json
 agents/main/agent/auth-profiles.json
+venv/
+__pycache__/
+*.pyc
+.env
