@@ -9,10 +9,10 @@ from fastapi import FastAPI
 import uvicorn
 
 # NEW imports for Stage 4
-from agents.strategist import run_strategist
-from agents.builder import run_builder
-from agents.proposal import run_proposal
-from agents.delivery import run_delivery
+from strategist import run_strategist
+from builder_worker import run_builder
+from proposal_worker import run_proposal
+from delivery_worker import run_delivery
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
