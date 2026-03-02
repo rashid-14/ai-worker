@@ -84,6 +84,15 @@ def run_builder():
     task = get_new_opportunity()
     if task:
         task_id, payload = task
+
+        # ✅ FIX: Convert DB payload to JSON dict if needed
+        try:
+            if isinstance(payload, str):
+                payload = json.loads(payload)
+        except Exception as e:
+            print("Payload parse failed:", e)
+            return
+
         solution = build_solution(payload)
         save_solution(task_id, solution)
         print("Built solution for task:", task_id)
