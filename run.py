@@ -69,17 +69,17 @@ def run_workflow_loop():
 # ---------------- STARTUP ---------------- #
 
 @app.on_event("startup")
-def startup_event():
-    logger.info("Starting app...")
+def start_background_worker():
+    logger.info("Starting background workflow engine...")
 
-    # Start workflow AFTER small delay
     def delayed_start():
-        time.sleep(5)
+        logger.info("Waiting for DB warmup...")
+        time.sleep(15)   # allow Railway DB to wake up
         init_db()
-        run_workflow_loop()
+        logger.info("DB ready. Starting workflow...")
+        run_worker()
 
     threading.Thread(target=delayed_start, daemon=True).start()
-
 
 # ---------------- RAILWAY BOOT ---------------- #
 
