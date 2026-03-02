@@ -2,11 +2,11 @@ import time
 import os
 import threading
 import logging
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import uvicorn
 
 from database import engine, Base
-from models import Task
 from agents.scout_agent import run_scout
 from strategist import run_strategist
 from builder_worker import run_builder
@@ -16,74 +16,73 @@ from delivery_worker import run_delivery
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-os.environ["OPENCLAW_HOME"] = "/home/rashi/.openclaw"
-os.environ["OPENCLAW_WORKSPACE"] = "/home/rashi/.openclaw/workspace"
+# ---------------- DB INIT ---------------- #
 
-from workspace.runner import main
+def init_db():
+    from sqlalchemy.exc import OperationalError
+    for i in range(10):
+        try:
+            Base.metadata.create_all(bind=engine)
+            logger.info("DB connected")
+            return
+        except OperationalError:
+            logger.info("Waiting for DB...")
+            time.sleep(3)
 
-app = FastAPI()
+# ---------------- WORKFLOW ---------------- #
 
-# ---------------- HEALTH CHECK ---------------- #
+def run_workflow_cycle():
+    try:
+        logger.info("🚀 Scout...")
+        run_scout()
+
+        logger.info("🧠 Strategist...")
+        run_strategist()
+
+        logger.info("🏗 Builder...")
+        run_builder()
+
+        logger.info("📦 Proposal...")
+        run_proposal()
+
+        logger.info("🚚 Delivery...")
+        run_delivery()
+
+    except Exception as e:
+        logger.error(f"Workflow crashed: {e}")
+
+def run_worker_loop():
+    logger.info("Worker loop started")
+    while True:
+        run_workflow_cycle()
+        time.sleep(600)
+
+# ---------------- LIFESPAN ---------------- #
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("App startup")
+
+    init_db()
+
+    # start worker AFTER API is alive
+    threading.Thread(target=run_worker_loop, daemon=True).start()
+
+    yield
+
+    logger.info("App shutdown")
+
+# ---------------- FASTAPI ---------------- #
+
+app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 def health():
     return {"status": "alive"}
 
-# ---------------- DB INIT ---------------- #
+# ---------------- RUN ---------------- #
 
-def init_db():
-    from sqlalchemy.exc import OperationalError
-
-    for _ in range(10):
-        try:
-            Base.metadata.create_all(bind=engine)
-            logger.info("DB Ready")
-            return
-        except OperationalError:
-            logger.info("Waiting for DB...")
-            time.sleep(2)
-
-# ---------------- WORKFLOW ---------------- #
-
-def run_workflow_loop():
-    logger.info("Workflow engine started")
-
-    iteration = 0
-
-    while True:
-        iteration += 1
-        try:
-            logger.info(f"Workflow iteration {iteration}")
-
-            run_scout()
-            run_strategist()
-            run_builder()
-            run_proposal()
-            run_delivery()
-
-        except Exception as e:
-            logger.error(f"Workflow crashed: {e}")
-
-        time.sleep(600)
-
-# ---------------- STARTUP ---------------- #
-
-@app.on_event("startup")
-def start_background_worker():
-    logger.info("Starting background workflow engine...")
-
-    def delayed_start():
-        logger.info("Waiting for DB warmup...")
-        time.sleep(15)   # allow Railway DB to wake up
-        init_db()
-        logger.info("DB ready. Starting workflow...")
-        run_worker()
-
-    threading.Thread(target=delayed_start, daemon=True).start()
-
-# ---------------- RAILWAY BOOT ---------------- #
-
-port = int(os.environ.get("PORT", 8080))
-logger.info(f"Booting FastAPI on {port}")
-
-uvicorn.run(app, host="0.0.0.0", port=port)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    logger.info(f"Starting server on {port}")
+    uvicorn.run(app, host="0.0.0.0", port=port)
