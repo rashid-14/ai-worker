@@ -47,11 +47,21 @@ def save_solution(conn, cursor, task_id, solution):
     conn.commit()
 
 def build_solution(opportunity):
-    return {
-        "solution_name": "Smart Business System",
+
+    print("🏗 Building solution (cloud-safe)...")
+
+    # ensure payload is dict
+    if isinstance(opportunity, str):
+        try:
+            opportunity = json.loads(opportunity)
+        except:
+            opportunity = {"text": opportunity}
+
+    solution = {
+        "solution_name": "Smart Workflow System",
         "target_industry": opportunity.get("industry", "General Business"),
-        "problem_summary": opportunity.get("problem", "Manual workflow inefficiency"),
-        "proposed_solution": "Custom software system to automate workflows",
+        "problem_summary": opportunity.get("text", "Manual workflow inefficiency"),
+        "proposed_solution": "Automation software to streamline operations",
         "core_modules": [
             "Dashboard",
             "Client Management",
@@ -61,12 +71,14 @@ def build_solution(opportunity):
         "packages": [
             {"name": "Starter", "features": ["Basic CRM", "Dashboard"]},
             {"name": "Growth", "features": ["CRM", "Automation", "Reports"]},
-            {"name": "Enterprise", "features": ["Full Suite", "Analytics", "Custom Logic"]}
+            {"name": "Enterprise", "features": ["Full Suite", "Analytics"]}
         ],
-        "landing_copy": "Transform your business with automation and smart systems.",
-        "delivery_scope": "End-to-end development and deployment",
-        "fit_for": ["SMEs", "Service Businesses"]
+        "landing_copy": "Transform your operations with intelligent automation.",
+        "delivery_scope": "End-to-end development & deployment",
+        "fit_for": ["SMEs", "Agencies", "Service Businesses"]
     }
+
+    return solution
 
 def run_builder():
     try:
