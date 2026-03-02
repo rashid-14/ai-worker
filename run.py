@@ -1,14 +1,15 @@
 import time
 import os
-from database import engine, Base
-from models import Task
-from agents.scout_agent import run_scout
 import threading
 import logging
 from fastapi import FastAPI
 import uvicorn
 
-# NEW imports for Stage 4
+from database import engine, Base
+from models import Task
+from agents.scout_agent import run_scout
+
+# Stage 4 Agents
 from strategist import run_strategist
 from builder_worker import run_builder
 from proposal_worker import run_proposal
@@ -24,57 +25,51 @@ from workspace.runner import main
 
 app = FastAPI()
 
+# ---------------- DB INIT ---------------- #
+
 def init_db():
-    import time
     from sqlalchemy.exc import OperationalError
 
     for i in range(10):
         try:
             Base.metadata.create_all(bind=engine)
-            print("DB connected and table created")
+            logger.info("DB connected and table created")
             return
         except OperationalError:
-            print("Waiting for DB...")
+            logger.info("Waiting for DB...")
             time.sleep(3)
 
-init_db()
+# ---------------- HEALTH ---------------- #
 
 @app.get("/")
 def health():
     return {"status": "ok"}
 
-
-# ---------------- WORKFLOW ENGINE ---------------- #
+# ---------------- WORKFLOW ---------------- #
 
 def run_workflow_cycle(iteration):
     try:
         logger.info(f"Workflow iteration {iteration} started")
 
-        print("🚀 Running Scout...")
+        logger.info("🚀 Running Scout...")
         run_scout()
-        print("✅ Scout Completed")
 
-        print("🧠 Running Strategist...")
+        logger.info("🧠 Running Strategist...")
         run_strategist()
-        print("✅ Strategist Completed")
 
-        print("🏗 Running Builder...")
+        logger.info("🏗 Running Builder...")
         run_builder()
-        print("✅ Builder Completed")
 
-        print("📦 Running Proposal...")
+        logger.info("📦 Running Proposal...")
         run_proposal()
-        print("✅ Proposal Completed")
 
-        print("🚚 Running Delivery...")
+        logger.info("🚚 Running Delivery...")
         run_delivery()
-        print("✅ Delivery Completed")
 
         logger.info(f"Workflow iteration {iteration} completed")
 
     except Exception as e:
         logger.error(f"Workflow crashed: {e}")
-
 
 def run_worker():
     logger.info("Worker thread started")
@@ -85,13 +80,18 @@ def run_worker():
         iteration += 1
         run_workflow_cycle(iteration)
 
-        # Sleep 10 mins to stay safe with Railway quota
+        # Safe sleep for Railway
         time.sleep(600)
 
+# ---------------- STARTUP EVENT ---------------- #
 
-threading.Thread(target=run_worker, daemon=True).start()
+@app.on_event("startup")
+def start_background_worker():
+    logger.info("Starting background workflow engine...")
+    init_db()
+    threading.Thread(target=run_worker, daemon=True).start()
 
-# ---------------- FASTAPI ---------------- #
+# ---------------- RUN APP ---------------- #
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
