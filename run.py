@@ -80,9 +80,10 @@ def startup_event():
 
     threading.Thread(target=delayed_start, daemon=True).start()
 
-# ---------------- MAIN ---------------- #
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    logger.info(f"Booting FastAPI on {port}")
-    uvicorn.run(app, host="0.0.0.0", port=port)
+# ---------------- RAILWAY BOOT ---------------- #
+
+port = int(os.environ.get("PORT", 8080))
+logger.info(f"Booting FastAPI on {port}")
+
+uvicorn.run(app, host="0.0.0.0", port=port)
