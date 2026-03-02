@@ -85,13 +85,17 @@ def run_builder():
     if task:
         task_id, payload = task
 
-        # ✅ FIX: Convert DB payload to JSON dict if needed
+        print("📦 Raw payload from DB:", payload)
+
+        # Convert string → dict safely
         try:
             if isinstance(payload, str):
                 payload = json.loads(payload)
         except Exception as e:
-            print("Payload parse failed:", e)
+            print("❌ Payload parse failed:", e)
             return
+
+        print("✅ Parsed payload:", payload)
 
         solution = build_solution(payload)
         save_solution(task_id, solution)
