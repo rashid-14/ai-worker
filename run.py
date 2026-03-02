@@ -65,17 +65,15 @@ def run_worker_loop():
 
 # ---------------- LIFESPAN ---------------- #
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    logger.info("🚀 App startup")
-
-    init_db()
+@app.on_event("startup")
+def start_worker():
+    logger.info("🚀 Startup triggered")
 
     def delayed_worker():
         logger.info("⏳ Waiting before starting workflow...")
-        time.sleep(20)   # Let Railway network settle
+        time.sleep(20)
 
-        logger.info("🔁 Starting continuous workflow loop")
+        logger.info("🔁 Continuous workflow started")
 
         while True:
             try:
@@ -93,7 +91,7 @@ async def lifespan(app: FastAPI):
             except Exception as e:
                 logger.error(f"Workflow crashed: {e}")
 
-            time.sleep(600)  # run every 10 mins
+            time.sleep(600)
 
     threading.Thread(target=delayed_worker, daemon=True).start()
 
