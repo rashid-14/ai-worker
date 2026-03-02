@@ -3,11 +3,11 @@ import os
 import threading
 import logging
 from fastapi import FastAPI
+import uvicorn
 
 from database import engine, Base
+from models import Task
 from agents.scout_agent import run_scout
-
-# Stage 4 Agents
 from strategist import run_strategist
 from builder_worker import run_builder
 from proposal_worker import run_proposal
@@ -23,68 +23,66 @@ from workspace.runner import main
 
 app = FastAPI()
 
+# ---------------- HEALTH CHECK ---------------- #
+
+@app.get("/")
+def health():
+    return {"status": "alive"}
+
 # ---------------- DB INIT ---------------- #
 
 def init_db():
     from sqlalchemy.exc import OperationalError
 
-    for i in range(10):
+    for _ in range(10):
         try:
             Base.metadata.create_all(bind=engine)
-            logger.info("DB connected and table created")
+            logger.info("DB Ready")
             return
         except OperationalError:
             logger.info("Waiting for DB...")
-            time.sleep(3)
-
-# ---------------- HEALTH ---------------- #
-
-@app.get("/")
-def health():
-    return {"status": "ok"}
+            time.sleep(2)
 
 # ---------------- WORKFLOW ---------------- #
 
-def run_workflow_cycle(iteration):
-    try:
-        logger.info(f"Workflow iteration {iteration} started")
-
-        logger.info("🚀 Running Scout...")
-        run_scout()
-
-        logger.info("🧠 Running Strategist...")
-        run_strategist()
-
-        logger.info("🏗 Running Builder...")
-        run_builder()
-
-        logger.info("📦 Running Proposal...")
-        run_proposal()
-
-        logger.info("🚚 Running Delivery...")
-        run_delivery()
-
-        logger.info(f"Workflow iteration {iteration} completed")
-
-    except Exception as e:
-        logger.error(f"Workflow crashed: {e}")
-
-def run_worker():
-    logger.info("Worker thread started")
+def run_workflow_loop():
+    logger.info("Workflow engine started")
 
     iteration = 0
 
     while True:
         iteration += 1
-        run_workflow_cycle(iteration)
+        try:
+            logger.info(f"Workflow iteration {iteration}")
 
-        # Sleep 10 minutes (Railway safe)
+            run_scout()
+            run_strategist()
+            run_builder()
+            run_proposal()
+            run_delivery()
+
+        except Exception as e:
+            logger.error(f"Workflow crashed: {e}")
+
         time.sleep(600)
 
-# ---------------- STARTUP EVENT ---------------- #
+# ---------------- STARTUP ---------------- #
 
 @app.on_event("startup")
 def startup_event():
-    logger.info("🚀 Starting background workflow engine...")
-    init_db()
-    threading.Thread(target=run_worker, daemon=True).start()
+    logger.info("Starting app...")
+
+    # Start workflow AFTER small delay
+    def delayed_start():
+        time.sleep(5)
+        init_db()
+        run_workflow_loop()
+
+    threading.Thread(target=delayed_start, daemon=True).start()
+
+# ---------------- MAIN ---------------- #
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    logger.info(f"Booting FastAPI on {port}")
+    uvicorn.run(app, host="0.0.0.0", port=port)
