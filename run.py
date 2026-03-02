@@ -3,10 +3,8 @@ import os
 import threading
 import logging
 from fastapi import FastAPI
-import uvicorn
 
 from database import engine, Base
-from models import Task
 from agents.scout_agent import run_scout
 
 # Stage 4 Agents
@@ -80,20 +78,13 @@ def run_worker():
         iteration += 1
         run_workflow_cycle(iteration)
 
-        # Safe sleep for Railway
+        # Sleep 10 minutes (Railway safe)
         time.sleep(600)
 
 # ---------------- STARTUP EVENT ---------------- #
 
 @app.on_event("startup")
-def start_background_worker():
-    logger.info("Starting background workflow engine...")
+def startup_event():
+    logger.info("🚀 Starting background workflow engine...")
     init_db()
     threading.Thread(target=run_worker, daemon=True).start()
-
-# ---------------- RUN APP ---------------- #
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    logger.info(f"Starting FastAPI on port {port}")
-    uvicorn.run(app, host="0.0.0.0", port=port)
