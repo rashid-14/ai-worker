@@ -1,3 +1,4 @@
+print("🔥 RUN.PY STARTED")
 import time
 import os
 import threading
