@@ -12,9 +12,11 @@ from database import engine, Base
 from agents.scout_agent import run_scout
 from strategist import run_strategist
 from builder_worker import run_builder
-from proposal_worker import run_proposal
-from delivery_worker import run_delivery
+RUN_MODE = os.getenv("RUN_MODE", "CLOUD")
 
+if RUN_MODE == "LOCAL":
+    from proposal_worker import run_proposal
+    from delivery_worker import run_delivery
 # ---------------- LOGGING ---------------- #
 
 logging.basicConfig(
