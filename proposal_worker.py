@@ -1,90 +1,34 @@
-import time
-import json
-import psycopg2
-import os
-import requests
-from dotenv import load_dotenv
+from database import SessionLocal
+from models.proposal import Proposal
+from models.solution import Solution
 
-load_dotenv()
+def run_proposal():
 
-DB_URL = os.getenv("DATABASE_PUBLIC_URL") or os.getenv("DATABASE_URL")
-conn = psycopg2.connect(DB_URL)
-cursor = conn.cursor()
+    session = SessionLocal()
 
-def get_new_solution():
-    cursor.execute("""
-        SELECT id, solution_name, target_industry, proposed_solution
-        FROM solutions
-        WHERE id NOT IN (SELECT solution_id FROM proposals)
-        LIMIT 1;
-    """)
-    return cursor.fetchone()
+    try:
+        # find solutions without proposal
+        solutions = session.query(Solution).all()
 
-def save_proposal(solution_id, proposal):
-    cursor.execute("""
-        INSERT INTO proposals (
-            solution_id,
-            offer_title,
-            positioning,
-            pricing_tiers,
-            delivery_scope,
-            target_customer,
-            use_cases
-        )
-        VALUES (%s,%s,%s,%s,%s,%s,%s);
-    """, (
-        solution_id,
-        proposal["offer_title"],
-        proposal["positioning"],
-        json.dumps(proposal["pricing_tiers"]),
-        proposal["delivery_scope"],
-        proposal["target_customer"],
-        json.dumps(proposal["use_cases"])
-    ))
-    conn.commit()
+        for sol in solutions:
+            existing = session.query(Proposal).filter_by(solution_id=sol.id).first()
 
-def generate_proposal(solution):
+            if not existing:
+                # Instead of generating proposal
+                # mark as pending
+                proposal = Proposal(
+                    solution_id=sol.id,
+                    status="pending",
+                    payload={"note": "Waiting for local AI"}
+                )
 
-    prompt = f"""
-You are a Business Strategy AI.
+                session.add(proposal)
+                session.commit()
 
-Convert this solution into a service offer.
+                print(f"Proposal marked pending for solution {sol.id}")
 
-Solution:
-Name: {solution[1]}
-Industry: {solution[2]}
-Description: {solution[3]}
+    except Exception as e:
+        print("Proposal worker error:", e)
 
-Return ONLY JSON:
-
-{{
-  "offer_title": "",
-  "positioning": "",
-  "pricing_tiers": [],
-  "delivery_scope": "",
-  "target_customer": "",
-  "use_cases": []
-}}
-"""
-
-    response = requests.post(
-        "http://localhost:11434/api/generate",
-        json={
-            "model": "mistral",
-            "prompt": prompt,
-            "stream": False
-        }
-    )
-
-    result = response.json()
-    text = result["response"]
-
-    return json.loads(text)
-
-while True:
-    solution = get_new_solution()
-    if solution:
-        proposal = generate_proposal(solution)
-        save_proposal(solution[0], proposal)
-        print("Proposal created for solution:", solution[0])
-    time.sleep(60)
+    finally:
+        session.close()

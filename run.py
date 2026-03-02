@@ -3,6 +3,8 @@ import time
 import os
 import threading
 import logging
+from dotenv import load_dotenv
+load_dotenv()
 import sys
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
