@@ -1,17 +1,12 @@
-import time
 import json
 import psycopg2
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
+def get_db():
+    DB_URL = os.getenv("DATABASE_PUBLIC_URL") or os.getenv("DATABASE_URL")
+    return psycopg2.connect(DB_URL)
 
-# Connect DB
-DB_URL = os.getenv("DATABASE_PUBLIC_URL") or os.getenv("DATABASE_URL")
-conn = psycopg2.connect(DB_URL)
-cursor = conn.cursor()
-
-def get_new_opportunity():
+def get_new_opportunity(cursor):
     cursor.execute("""
         SELECT id, payload
         FROM tasks
@@ -20,7 +15,7 @@ def get_new_opportunity():
     """)
     return cursor.fetchone()
 
-def save_solution(task_id, solution):
+def save_solution(conn, cursor, task_id, solution):
     cursor.execute("""
         INSERT INTO solutions (
             task_id,
@@ -51,16 +46,11 @@ def save_solution(task_id, solution):
     cursor.execute("UPDATE tasks SET status='built' WHERE id=%s;", (task_id,))
     conn.commit()
 
-# 🚀 Cloud-safe builder (no localhost AI)
-
 def build_solution(opportunity):
-
-    print("🏗 Building solution (cloud mode)...")
-
-    solution = {
+    return {
         "solution_name": "Smart Business System",
-        "target_industry": opportunity.get("industry", "General Business") if isinstance(opportunity, dict) else "General Business",
-        "problem_summary": opportunity.get("problem", "Manual workflow inefficiency") if isinstance(opportunity, dict) else "Manual workflow inefficiency",
+        "target_industry": opportunity.get("industry", "General Business"),
+        "problem_summary": opportunity.get("problem", "Manual workflow inefficiency"),
         "proposed_solution": "Custom software system to automate workflows",
         "core_modules": [
             "Dashboard",
@@ -78,27 +68,20 @@ def build_solution(opportunity):
         "fit_for": ["SMEs", "Service Businesses"]
     }
 
-    return solution
-
 def run_builder():
-    task = get_new_opportunity()
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
 
-    if task:
-        task_id, payload = task
+        task = get_new_opportunity(cursor)
+        if task:
+            task_id, payload = task
+            solution = build_solution(payload)
+            save_solution(conn, cursor, task_id, solution)
+            print("Built solution for task:", task_id)
 
-        # 🔹 Convert payload string → dict
-        if isinstance(payload, str):
-            try:
-                payload = json.loads(payload)
-            except:
-                payload = {}
+        cursor.close()
+        conn.close()
 
-        solution = build_solution(payload)
-        save_solution(task_id, solution)
-
-        print("Built solution for task:", task_id)
-
-# Worker loop
-while True:
-    run_builder()
-    time.sleep(60)
+    except Exception as e:
+        print("Builder error:", e)

@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import uvicorn
 
+from database import init_db
 from database import engine, Base
 from agents.scout_agent import run_scout
 from strategist import run_strategist

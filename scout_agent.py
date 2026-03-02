@@ -5,7 +5,8 @@ from database import SessionLocal
 
 def run_scout():
     prompt = "Generate one real freelance opportunity idea for a developer. Include project type, required skills and difficulty."
-
+    
+    from database import SessionLocal
     session = SessionLocal()
 
     try:

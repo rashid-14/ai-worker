@@ -14,4 +14,5 @@ RUN cp -r workspace /home/rashi/.openclaw/
 
 EXPOSE 8080
 
-CMD ["uvicorn", "run:app", "--host", "0.0.0.0", "--port", "8080"]
+ENV PYTHONUNBUFFERED=1
+CMD ["python", "-u", "run.py"]
