@@ -32,6 +32,8 @@ def init_db():
 
 # ---------------- WORKFLOW ---------------- #
 
+RUN_MODE = os.getenv("RUN_MODE", "LOCAL")
+
 def run_workflow_cycle():
     try:
         logger.info("🚀 Scout...")
@@ -43,11 +45,14 @@ def run_workflow_cycle():
         logger.info("🏗 Builder...")
         run_builder()
 
-        logger.info("📦 Proposal...")
-        run_proposal()
+        if RUN_MODE == "LOCAL":
+            logger.info("📦 Proposal...")
+            run_proposal()
 
-        logger.info("🚚 Delivery...")
-        run_delivery()
+            logger.info("🚚 Delivery...")
+            run_delivery()
+        else:
+            logger.info("☁️ Cloud mode — skipping Proposal & Delivery")
 
     except Exception as e:
         logger.error(f"Workflow crashed: {e}")
