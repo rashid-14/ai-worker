@@ -67,21 +67,39 @@ def run_worker_loop():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("App startup")
+    logger.info("🚀 App startup")
 
     init_db()
 
-    def delayed_worker_start():
-        logger.info("Waiting for network warmup...")
-        time.sleep(20)
-        run_worker_loop()
+    def delayed_worker():
+        logger.info("⏳ Waiting before starting workflow...")
+        time.sleep(20)   # Let Railway network settle
 
-    # start worker AFTER API is alive
-    threading.Thread(target=delayed_worker_start, daemon=True).start()
+        logger.info("🔁 Starting continuous workflow loop")
+
+        while True:
+            try:
+                logger.info("🚀 Scout...")
+                run_scout()
+
+                logger.info("🧠 Strategist...")
+                run_strategist()
+
+                logger.info("🏗 Builder...")
+                run_builder()
+
+                logger.info("☁️ Cloud mode — skipping Proposal & Delivery")
+
+            except Exception as e:
+                logger.error(f"Workflow crashed: {e}")
+
+            time.sleep(600)  # run every 10 mins
+
+    threading.Thread(target=delayed_worker, daemon=True).start()
 
     yield
 
-    logger.info("App shutdown")
+    logger.info("🛑 App shutdown")
 
 # ---------------- FASTAPI ---------------- #
 
