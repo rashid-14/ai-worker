@@ -66,8 +66,13 @@ async def lifespan(app: FastAPI):
 
     init_db()
 
+    def delayed_worker_start():
+        logger.info("Waiting for network warmup...")
+        time.sleep(20)
+        run_worker_loop()
+
     # start worker AFTER API is alive
-    threading.Thread(target=run_worker_loop, daemon=True).start()
+    threading.Thread(target=delayed_worker_start, daemon=True).start()
 
     yield
 
