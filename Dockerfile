@@ -14,4 +14,4 @@ RUN cp -r workspace /home/rashi/.openclaw/
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "uvicorn run:app --host 0.0.0.0 --port $PORT"]
+CMD ["uvicorn", "run:app", "--host", "0.0.0.0", "--port", "8080"]
