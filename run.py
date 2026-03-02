@@ -2,11 +2,11 @@ import time
 import os
 import threading
 import logging
+import sys
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 import uvicorn
 
-from database import init_db
 from database import engine, Base
 from agents.scout_agent import run_scout
 from strategist import run_strategist
@@ -14,14 +14,20 @@ from builder_worker import run_builder
 from proposal_worker import run_proposal
 from delivery_worker import run_delivery
 
-logging.basicConfig(level=logging.INFO)
+# ---------------- LOGGING ---------------- #
+
+logging.basicConfig(
+    level=logging.INFO,
+    stream=sys.stdout,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 # ---------------- DB INIT ---------------- #
 
 def init_db():
     from sqlalchemy.exc import OperationalError
-    for i in range(10):
+    for _ in range(10):
         try:
             Base.metadata.create_all(bind=engine)
             logger.info("DB connected")
@@ -30,9 +36,11 @@ def init_db():
             logger.info("Waiting for DB...")
             time.sleep(3)
 
-# ---------------- WORKFLOW ---------------- #
+# ---------------- MODE ---------------- #
 
 RUN_MODE = os.getenv("RUN_MODE", "LOCAL")
+
+# ---------------- WORKFLOW ---------------- #
 
 def run_workflow_cycle():
     try:
@@ -57,41 +65,25 @@ def run_workflow_cycle():
     except Exception as e:
         logger.error(f"Workflow crashed: {e}")
 
-def run_worker_loop():
-    logger.info("Worker loop started")
+def worker_loop():
+    logger.info("🔁 Continuous workflow started")
+
     while True:
         run_workflow_cycle()
         time.sleep(600)
 
 # ---------------- LIFESPAN ---------------- #
 
-@app.on_event("startup")
-def start_worker():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     logger.info("🚀 Startup triggered")
+
+    init_db()
 
     def delayed_worker():
         logger.info("⏳ Waiting before starting workflow...")
         time.sleep(20)
-
-        logger.info("🔁 Continuous workflow started")
-
-        while True:
-            try:
-                logger.info("🚀 Scout...")
-                run_scout()
-
-                logger.info("🧠 Strategist...")
-                run_strategist()
-
-                logger.info("🏗 Builder...")
-                run_builder()
-
-                logger.info("☁️ Cloud mode — skipping Proposal & Delivery")
-
-            except Exception as e:
-                logger.error(f"Workflow crashed: {e}")
-
-            time.sleep(600)
+        worker_loop()
 
     threading.Thread(target=delayed_worker, daemon=True).start()
 
