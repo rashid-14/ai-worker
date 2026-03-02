@@ -59,8 +59,8 @@ def build_solution(opportunity):
 
     solution = {
         "solution_name": "Smart Business System",
-        "target_industry": opportunity.get("industry", "General Business"),
-        "problem_summary": opportunity.get("problem", "Manual workflow inefficiency"),
+        "target_industry": opportunity.get("industry", "General Business") if isinstance(opportunity, dict) else "General Business",
+        "problem_summary": opportunity.get("problem", "Manual workflow inefficiency") if isinstance(opportunity, dict) else "Manual workflow inefficiency",
         "proposed_solution": "Custom software system to automate workflows",
         "core_modules": [
             "Dashboard",
@@ -82,23 +82,20 @@ def build_solution(opportunity):
 
 def run_builder():
     task = get_new_opportunity()
+
     if task:
         task_id, payload = task
 
-        print("📦 Raw payload from DB:", payload)
-
-        # Convert string → dict safely
-        try:
-            if isinstance(payload, str):
+        # 🔹 Convert payload string → dict
+        if isinstance(payload, str):
+            try:
                 payload = json.loads(payload)
-        except Exception as e:
-            print("❌ Payload parse failed:", e)
-            return
-
-        print("✅ Parsed payload:", payload)
+            except:
+                payload = {}
 
         solution = build_solution(payload)
         save_solution(task_id, solution)
+
         print("Built solution for task:", task_id)
 
 # Worker loop
